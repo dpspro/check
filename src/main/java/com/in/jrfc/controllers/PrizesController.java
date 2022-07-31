@@ -19,7 +19,7 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/prizes")
+@RequestMapping("/prize")
 
 public class PrizesController {
     private static final Logger logger = LogManager.getLogger(PrizesController.class);
@@ -35,31 +35,13 @@ public class PrizesController {
         this.prizesRepository = prizesRepository;
     }
 
-    @GetMapping(value = "/prizes")
-    public ResponseEntity<List<Prize>> allPrizes() {
-        List<Prize> prizes = prizesRepository.findAll();
-        return (ResponseEntity.ok(prizes));
-
-    }
-
-    @GetMapping(value = "/current-prize")
-    public ResponseEntity<PrizeResponseDto> getCurrentPrize(@RequestParam
-                                                            @DateTimeFormat(pattern = "yyyy-MM-dd' 'HH:mm:ss") final Date hora,
-                                                            @RequestParam Integer productId,
-                                                            @RequestParam Long brandId) throws PrizeNotFoundException {
-        final PrizeRequestDto prizeFilterParams = new PrizeRequestDto(hora, productId, brandId);
+    @GetMapping(value = "/{hour},{productId},{brandId}")
+    public ResponseEntity<PrizeResponseDto> getPrize(@PathVariable
+                                                            @DateTimeFormat(pattern = "yyyy-MM-dd' 'HH:mm:ss") final Date hour,
+                                                            @PathVariable Integer productId,
+                                                            @PathVariable Long brandId) throws PrizeNotFoundException {
+        final PrizeRequestDto prizeFilterParams = new PrizeRequestDto(hour, productId, brandId);
         return ResponseEntity.ok(prizeService.getCurrentPrizeByProductIdAndBrandId(prizeFilterParams));
 
     }
-
-//    public ResponseEntity<PrizeResponseDto> getPrizeDetailBGrand,date(@PathVariable("id") int myId) {
-//        PrizeResponseDto prize = prizeServiceImpl.getPrizeDetailsById(myId);
-//        if (prize != null) {
-//            return new ResponseEntity<PrizeBean>(prize, HttpStatus.OK);
-//        } else {
-//            return new ResponseEntity<PrizeResponseDtoBean>(HttpStatus.NOT_FOUND);
-//        }
-//    }
-
-
 }

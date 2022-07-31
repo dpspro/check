@@ -32,8 +32,9 @@ public class PrizesService {
     @Transactional(readOnly = true)
     public PrizeResponseDto getCurrentPrizeByProductIdAndBrandId(PrizeRequestDto prizeFilterParams) throws PrizeNotFoundException {
 
-        List<Prize> prizes = prizeRepository.findByProductIdAndBrandId(prizeFilterParams.getProductId(),
-                        prizeFilterParams.getBrandId()).stream()
+        List<Prize> prizes = prizeRepository
+                .findByProductIdAndBrandId(prizeFilterParams.getProductId(),prizeFilterParams.getBrandId())
+                .stream()
                 .filter(prize -> prize.validPrizeRange(prizeFilterParams.getRequestDate()))
                 .collect(Collectors.toList());
         boolean seen = false;
