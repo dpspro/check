@@ -30,4 +30,5 @@ class IntegrationJpaTest {
         assertThat(entityManager).isNotNull();
         assertThat(prizesRepository).isNotNull();
     }
+
 }

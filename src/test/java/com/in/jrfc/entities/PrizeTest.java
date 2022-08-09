@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.data.annotation.Reference;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -18,14 +17,18 @@ class PrizeTest {
     private Prize prize1;
     private Prize prize2;
 
+    private final Date dateBefore = Timestamp.valueOf("2020-06-13 23:59:00");
+    private final Date dateBetween = Timestamp.valueOf("2020-06-15 00:00:00");
+    private final Date dateAfter = Timestamp.valueOf("2021-01-01 00:00:00");
+
     @BeforeEach
     void setUp() {
-        this.prize1 = Prize.builder().id(null).brandId(1L)
+        this.prize1 = Prize.builder().id(1L).brandId(1L)
                 .startDate(Timestamp.valueOf("2020-06-14 00:00:00"))
                 .endDate(Timestamp.valueOf("2020-12-31 23:59:59")).prizeList(1)
                 .productId(35455).priority(0).prize(BigDecimal.valueOf(35.50))
                 .curr("EUR").build();
-        this.prize2 = Prize.builder().id(null).brandId(1L)
+        this.prize2 = Prize.builder().id(1L).brandId(1L)
                 .startDate(Timestamp.valueOf("2020-06-14 00:00:00"))
                 .endDate(Timestamp.valueOf("2020-12-31 23:59:59")).prizeList(1)
                 .productId(35455).priority(0).prize(BigDecimal.valueOf(35.50))
@@ -55,7 +58,7 @@ class PrizeTest {
 
     @Test
     void testEquals() {
-        assertEquals(this.prize1, this.prize2);
+        assertEquals(prize1, prize2);
     }
 
 
@@ -67,19 +70,36 @@ class PrizeTest {
     @Test
     @DisplayName("test_if_the_filter_date_is_between_the_prize_range_days")
     void validPrizeRangeTest() {
-        //given two dates
-        Date dateBetween = Timestamp.valueOf("2020-06-15 00:00:00");
-        Date dateBefore = Timestamp.valueOf("2020-06-13 23:59:00");
-        Date dateAfter = Timestamp.valueOf("2021-01-01 00:00:00");
 
-        // Then expect true
-        Assertions.assertTrue(this.prize1.validPrizeRange(dateBetween));
 
-        // And expect false
+        //given a prize1 range dates Then expect true
+        Assertions.assertTrue(this.prize1
+                .validPrizeRange(dateBetween), "testDate= " + dateBetween
+                + "prize1 startDate= " + this.prize1.getStartDate()
+                + " and endDate= " + this.prize1.getEndDate());
+    }
 
-        Assertions.assertFalse(this.prize1.validPrizeRange(dateBefore));
-        Assertions.assertFalse(this.prize1.validPrizeRange(dateAfter));
+    @Test
+    @DisplayName("test_if_the_filter_date_is_not_between_the_prize_range_days")
+    void testInvalidPrizeRange() {
+        //given a prize1 range dates then expect false
+        Assertions.assertAll(
+                () -> Assertions.assertFalse(this.prize1.validPrizeRange(dateBefore)
+                        ,"testDate= " + dateBefore+ " prize1 startDate= " + this.prize1.getStartDate()),
+                () -> Assertions.assertFalse(this.prize1.validPrizeRange(dateAfter)
+                        , "testDate= " +dateAfter +" prize1 endDate= " + this.prize1.getEndDate()));
+
 
     }
 
+
+    @Test
+    @DisplayName("test_the_remaining_prize_application_days_list")
+    void lookForApplicationDates() {
+        Assertions.assertTrue(this.prize1.lookForApplicationDates(dateBetween).size()>1);
+    }
+
+    @Test
+    void deleteInBatch() {
+    }
 }
