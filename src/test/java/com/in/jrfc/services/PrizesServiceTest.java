@@ -5,10 +5,13 @@ import com.in.jrfc.dtos.PrizeResponseDto;
 import com.in.jrfc.entities.Prize;
 import com.in.jrfc.repositories.PrizesRepository;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -19,9 +22,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -33,24 +38,24 @@ import static org.mockito.Mockito.when;
 @Log4j2
 class PrizesServiceTest {
 
+    private final List<LocalDate> localDates = new ArrayList<>();
+    private final List<Prize> prizes = new ArrayList<>();
 
     @Mock
     private PrizesRepository prizesRepository;
+
     @Autowired
     private PrizesService prizesService;
+
+
     private Prize prize;
     private PrizeResponseDto prizeResponseDto;
     private PrizeRequestDto prizeRequestDto;
-    private final List<Prize> prizes = new ArrayList<>();
+
 
     @BeforeEach
     void setUp() {
 
-//        prize = Prize.builder().brandId(1L)
-//                .startDate(Timestamp.valueOf((new Loc null))
-//                .endDate(Timestamp.valueOf((LocalDateTime) null)).prizeList(1)
-//                .productId(35455).priority(0).prize(BigDecimal.valueOf(35.50))
-//                .curr("EUR").build();
         Prize prize1 = Prize.builder().brandId(1L)
                 .startDate(Timestamp.valueOf("2020-06-14 00:00:00"))
                 .endDate(Timestamp.valueOf("2020-12-31 23:59:59")).prizeList(1)
@@ -71,10 +76,7 @@ class PrizesServiceTest {
                 .endDate(Timestamp.valueOf("2020-12-31 23:59:59")).prizeList(4)
                 .productId(35455).priority(1).prize(BigDecimal.valueOf(38.95))
                 .curr("EUR").build();
-        prizes.add(prize= Prize.builder().startDate(Timestamp.valueOf("2020-06-14 00:00:00"))
-                .endDate(Timestamp.valueOf("2020-12-31 23:59:59")).prizeList(1)
-                .productId(35455).priority(0).prize(BigDecimal.valueOf(35.50)).build());
-//        prizes.add(prize1);
+        prizes.add(prize1);
         prizes.add(prize2);
         prizes.add(prize3);
         prizes.add(prize4);
@@ -84,7 +86,7 @@ class PrizesServiceTest {
                 .productId(prize3.getProductId())
                 .brandId(prize3.getBrandId())
                 .prizeList(prize3.getPrizeList())
-                .applicationDates(new ArrayList<LocalDate>())
+                .applicationDates(new ArrayList<>())
                 .prize(prize3.getPrize()).build();
 
         prizeRequestDto = PrizeRequestDto.builder()

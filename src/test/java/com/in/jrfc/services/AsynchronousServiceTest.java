@@ -44,17 +44,15 @@ class AsynchronousServiceTest {
     void asyncPrizeResponmse() {
 
 
-        PrizeRequestDto prizeRequestDto = new PrizeRequestDto(
-                Timestamp.valueOf("2020-06-14 00:00:00"), 1, 1L);
-        PrizeResponseDto prizeResponseDto = new PrizeResponseDto(
-                35455, 1L, 1, localDates, BigDecimal.valueOf(35.50));
+        PrizeRequestDto prizeRequestDto = new PrizeRequestDto(Timestamp.valueOf("2020-06-14 00:00:00"), 1, 1L);
+        PrizeResponseDto prizeResponseDto = new PrizeResponseDto(35455, 1L, 1, localDates, BigDecimal.valueOf(35.50));
         when(asynchronousService.asyncPrizeResponse(prizeRequestDto))
                 .thenReturn(new AsyncResult<>( prizeResponseDto));
         this.asynchronousService.asyncPrizeResponse(prizeRequestDto);
 
         try {
             boolean awaitTermination = this.myTaskExecutor.getThreadPoolExecutor().awaitTermination(1, TimeUnit.SECONDS);
-            Assertions.assertEquals(false, awaitTermination);
+            Assertions.assertFalse(awaitTermination);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

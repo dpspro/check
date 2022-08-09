@@ -84,10 +84,8 @@ class PrizeTest {
     void testInvalidPrizeRange() {
         //given a prize1 range dates then expect false
         Assertions.assertAll(
-                () -> Assertions.assertFalse(this.prize1.validPrizeRange(dateBefore)
-                        ,"testDate= " + dateBefore+ " prize1 startDate= " + this.prize1.getStartDate()),
-                () -> Assertions.assertFalse(this.prize1.validPrizeRange(dateAfter)
-                        , "testDate= " +dateAfter +" prize1 endDate= " + this.prize1.getEndDate()));
+                () -> Assertions.assertFalse(this.prize1.validPrizeRange(dateBefore),"testDate= " + dateBefore+ " prize1 startDate= " + this.prize1.getStartDate()),
+                () -> Assertions.assertFalse(this.prize1.validPrizeRange(dateAfter), "testDate= " +dateAfter +" prize1 endDate= " + this.prize1.getEndDate()));
 
 
     }

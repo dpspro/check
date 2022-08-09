@@ -39,7 +39,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-;
+
 
 
 //@RunWith(SpringRunner.class)
@@ -48,7 +48,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class PrizesControllerTest {
-
+    private final static Logger LOGGER = LoggerFactory.getLogger(PrizesControllerTest.class);
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -99,6 +99,7 @@ class PrizesControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/prize/{hour},{productId},{brandId}", hour, pId, bId))
                 .andExpect(status().isOk());
         Future<PrizeResponseDto> responseDtoResult = asynchronousService.asyncPrizeResponse(prizeRequestDto);
+
         Assertions.assertEquals(responseDtoResult.get().getPrize(), BigDecimal.valueOf(35.50));
         Assertions.assertEquals(responseDtoResult.get().getProductId(), 35455);
         Assertions.assertEquals(responseDtoResult.get().getBrandId(), 1L);
