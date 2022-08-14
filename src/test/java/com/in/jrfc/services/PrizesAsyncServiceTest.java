@@ -1,9 +1,11 @@
 package com.in.jrfc.services;
 
+
 import com.in.jrfc.dtos.PrizeRequestDto;
 import com.in.jrfc.dtos.PrizeResponseDto;
 import com.in.jrfc.entities.Prize;
 import com.in.jrfc.repositories.PrizesRepository;
+import com.in.jrfc.utility.PrizeServiceUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.OngoingStubbing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -18,10 +21,14 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,7 +41,7 @@ class PrizesAsyncServiceTest {
     @Autowired
     private ThreadPoolTaskExecutor myTaskExecutor;
     @Mock
-    PrizesAsyncService prizesAsyncService;
+    private PrizesAsyncService prizesAsyncService;
     private final List<Prize> prizes = new ArrayList<>();
 
     @Mock
@@ -120,12 +127,13 @@ class PrizesAsyncServiceTest {
     @Test
     void testentityToDto() {
         LocalDate localDate= LocalDate.ofInstant(prizeRequestDto.getRequestDate().toInstant(), ZoneId.of("UTC"));
-        localDates.add(localDate);   PrizeResponseDto   prizeResponseDto1 = PrizeResponseDto.builder()//PrizeResponseDto.PrizeResponseDtoBuilder builder = PrizeResponseDto.builder();
-                .productId(prize.getProductId())
-                .brandId(1L)
-                .prizeList(2)
-                .applicationDates(localDates)
-                .prize(BigDecimal.valueOf(30.5)).build();
+        localDates.add(localDate);
+//        PrizeResponseDto   prizeResponseDto1 = PrizeResponseDto.builder()//PrizeResponseDto.PrizeResponseDtoBuilder builder = PrizeResponseDto.builder();
+//                .productId(prize.getProductId())
+//                .brandId(1L)
+//                .prizeList(2)
+//                .applicationDates(localDates)
+//                .prize(BigDecimal.valueOf(30.5)).build();
       //  when(prizesRepository.findByProductIdAndBrandId(35455, 1L)).thenReturn(prizes);
         when(this.prizesAsyncService.entityToDto(this.prize, prizeRequestDto.getRequestDate())).thenReturn(this.prizeResponseDto);
        this.prizeResponseDto = prizesAsyncService.entityToDto(this.prize, prizeRequestDto.getRequestDate());
@@ -138,7 +146,7 @@ class PrizesAsyncServiceTest {
     }
 
     @Test
-    void asyncPrizeResponse() throws InterruptedException {
+    void asyncPrizeResponse() {
 
 
         PrizeRequestDto prizeRequestDto = new PrizeRequestDto(Timestamp.valueOf("2020-06-14 00:00:00"), 1, 1L);
@@ -153,6 +161,31 @@ class PrizesAsyncServiceTest {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
+
+    }
+
+    @Test
+    @DisplayName("time_sleep_test")
+    public void testSleepTime() throws ExecutionException, InterruptedException {
+        PrizeRequestDto prizeRequestDto = new PrizeRequestDto(Timestamp.valueOf("2020-06-14 00:00:00"), 1, 1L);
+        PrizeResponseDto prizeResponseDto = new PrizeResponseDto(35455, 1L, 1, localDates, BigDecimal.valueOf(35.50));
+       when(this.prizesAsyncService.getCurrentPrizeByProductIdAndBrandId(prizeRequestDto))
+                .thenReturn(new AsyncResult<>(prizeResponseDto));
+
+        long now = System.currentTimeMillis();
+
+        // <2>  Blocking waiting for results
+
+
+        CountDownLatch latch = new CountDownLatch(1);
+        // <1>  Perform tasks
+        Future<PrizeResponseDto> executeResult = this.prizesAsyncService.getCurrentPrizeByProductIdAndBrandId(prizeRequestDto);
+        long sleep = 1000;
+        executeResult.get();
+
+
+        assertTrue((System.currentTimeMillis()+sleep-now  ) >= 1000);
 
 
     }

@@ -5,8 +5,6 @@ import com.in.jrfc.dtos.PrizeResponseDto;
 import com.in.jrfc.exceptions.PrizeNotFoundException;
 import com.in.jrfc.services.PrizesAsyncService;
 import com.in.jrfc.utility.PrizeServiceUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -25,7 +23,6 @@ import java.util.concurrent.ExecutionException;
 @RequestMapping("/prize")
 public class PrizesController {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(PrizesController.class);
     @Autowired
     private final PrizesAsyncService prizesAsyncService;
 
@@ -42,7 +39,7 @@ public class PrizesController {
         final PrizeRequestDto prizeFilterParams = new PrizeRequestDto(hour, productId, brandId);
         PrizeResponseDto respFuture = prizesAsyncService.getCurrentPrizeByProductIdAndBrandId(prizeFilterParams).get();
         if (respFuture != null) {
-            return new ResponseEntity<PrizeResponseDto>(respFuture, HttpStatus.OK);
+            return new ResponseEntity<>(respFuture, HttpStatus.OK);
         } else {
             throw new PrizeNotFoundException();
         }
