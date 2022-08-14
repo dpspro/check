@@ -5,7 +5,6 @@ import com.in.jrfc.dtos.PrizeRequestDto;
 import com.in.jrfc.dtos.PrizeResponseDto;
 import com.in.jrfc.entities.Prize;
 import com.in.jrfc.repositories.PrizesRepository;
-import com.in.jrfc.utility.PrizeServiceUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.OngoingStubbing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -21,12 +19,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -178,10 +174,10 @@ class PrizesAsyncServiceTest {
         // <2>  Blocking waiting for results
 
 
-        CountDownLatch latch = new CountDownLatch(1);
-        // <1>  Perform tasks
         Future<PrizeResponseDto> executeResult = this.prizesAsyncService.getCurrentPrizeByProductIdAndBrandId(prizeRequestDto);
-        long sleep = 1000;
+
+        // <1>  Perform tasks
+         long sleep = 1000;
         executeResult.get();
 
 

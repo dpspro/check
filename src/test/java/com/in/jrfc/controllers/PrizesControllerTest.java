@@ -3,7 +3,6 @@ package com.in.jrfc.controllers;
 import com.in.jrfc.dtos.PrizeRequestDto;
 import com.in.jrfc.dtos.PrizeResponseDto;
 import com.in.jrfc.entities.Prize;
-import com.in.jrfc.services.AsynchronousService;
 import com.in.jrfc.services.PrizesAsyncService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,8 +55,7 @@ class PrizesControllerTest {
 
     @MockBean
     private PrizesAsyncService prizesAsyncService;
-    @MockBean
-    private AsynchronousService asynchronousService;
+
     @MockBean
     private PrizesController prizesController;
 
