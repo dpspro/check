@@ -4,13 +4,11 @@ import com.in.jrfc.dtos.PrizeRequestDto;
 import com.in.jrfc.dtos.PrizeResponseDto;
 import com.in.jrfc.entities.Prize;
 import com.in.jrfc.services.AsynchronousService;
-import lombok.extern.log4j.Log4j2;
+import com.in.jrfc.services.PrizesAsyncService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -21,7 +19,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -30,16 +27,14 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-
 
 
 //@RunWith(SpringRunner.class)
@@ -60,6 +55,8 @@ class PrizesControllerTest {
     private PrizeResponseDto prizeResponseDto;
 
     @MockBean
+    private PrizesAsyncService prizesAsyncService;
+    @MockBean
     private AsynchronousService asynchronousService;
     @MockBean
     private PrizesController prizesController;
@@ -68,8 +65,8 @@ class PrizesControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        asynchronousService = mock(AsynchronousService.class);
-        this.prizesController = new PrizesController(asynchronousService);
+        prizesAsyncService = mock(PrizesAsyncService.class);
+        this.prizesController = new PrizesController(prizesAsyncService);
         this.prizeRequestDto = PrizeRequestDto.builder().requestDate(Timestamp.valueOf("2020-06-14 00:00:00"))
                 .productId(35455).brandId(1L).build();
         this.prizes = new ArrayList<>();
@@ -94,11 +91,12 @@ class PrizesControllerTest {
         String hour = "2020-06-14 00:00:00";
         Integer pId = 35455;
         String bId = "1";
-        when(asynchronousService.asyncPrizeResponse(prizeRequestDto))
+        when(prizesAsyncService.getCurrentPrizeByProductIdAndBrandId(prizeRequestDto))
                 .thenReturn(new AsyncResult<>(this.prizeResponseDto));
-        mockMvc.perform(MockMvcRequestBuilders.get("/prize/{hour},{productId},{brandId}", hour, pId, bId))
-                .andExpect(status().isOk());
-        Future<PrizeResponseDto> responseDtoResult = asynchronousService.asyncPrizeResponse(prizeRequestDto);
+        mockMvc.perform(get("/prize/{hour},{productId},{brandId}", hour, pId, bId).contentType("application/json")
+                ).andDo(print()).
+                andExpect(status().isOk());
+        Future<PrizeResponseDto> responseDtoResult = prizesAsyncService.getCurrentPrizeByProductIdAndBrandId(prizeRequestDto);
 
         Assertions.assertEquals(responseDtoResult.get().getPrize(), BigDecimal.valueOf(35.50));
         Assertions.assertEquals(responseDtoResult.get().getProductId(), 35455);
@@ -112,17 +110,17 @@ class PrizesControllerTest {
         String hour = "2020-06_14 00:00:00";
         Integer pId = 15;
         String bId = "1";
-        this.prize=null;
-        when(asynchronousService.asyncPrizeResponse(null))
+        this.prize = null;
+        when(prizesAsyncService.getCurrentPrizeByProductIdAndBrandId(null))
                 .thenReturn(new AsyncResult<>(null));
-        mockMvc.perform(MockMvcRequestBuilders.get("/prize/{hour},{productId},{brandId}", hour, pId, bId))
-                .andExpect(status().isBadRequest());
-        Future<PrizeResponseDto> responseDtoResult = asynchronousService.asyncPrizeResponse(prizeRequestDto);
+        mockMvc.perform(get("/prize/{hour},{productId},{brandId}", hour, pId, bId)
+                .contentType("application/json")
+            ).andDo(print()).andExpect(status().isBadRequest());
+        Future<PrizeResponseDto> responseDtoResult = prizesAsyncService.getCurrentPrizeByProductIdAndBrandId(prizeRequestDto);
         Assertions.assertNull(responseDtoResult);
 
 
     }
-
 
     @Test
     void deleteInBatch() {

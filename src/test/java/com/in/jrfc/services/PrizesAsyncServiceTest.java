@@ -4,47 +4,41 @@ import com.in.jrfc.dtos.PrizeRequestDto;
 import com.in.jrfc.dtos.PrizeResponseDto;
 import com.in.jrfc.entities.Prize;
 import com.in.jrfc.repositories.PrizesRepository;
-import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-@Disabled
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 @SpringBootTest
-@Log4j2
-class PrizesServiceTest {
-
+class PrizesAsyncServiceTest {
     private final List<LocalDate> localDates = new ArrayList<>();
+    @Autowired
+    private ThreadPoolTaskExecutor myTaskExecutor;
+    @Mock
+    PrizesAsyncService prizesAsyncService;
     private final List<Prize> prizes = new ArrayList<>();
 
     @Mock
     private PrizesRepository prizesRepository;
-
-    @Autowired
-    private PrizesService prizesService;
-
-
     private Prize prize;
     private PrizeResponseDto prizeResponseDto;
     private PrizeRequestDto prizeRequestDto;
@@ -79,19 +73,20 @@ class PrizesServiceTest {
         prizes.add(prize4);
         prize = prize2;
 
-        prizeResponseDto = PrizeResponseDto.builder()
-                .productId(prize3.getProductId())
-                .brandId(prize3.getBrandId())
-                .prizeList(prize3.getPrizeList())
-                .applicationDates(new ArrayList<>())
-                .prize(prize3.getPrize()).build();
+        prizeResponseDto = PrizeResponseDto.builder()//PrizeResponseDto.PrizeResponseDtoBuilder builder = PrizeResponseDto.builder();
+        .productId(prize3.getProductId())
+        .brandId(prize3.getBrandId())
+        .prizeList(prize3.getPrizeList())
+        .applicationDates(localDates)
+        .prize(prize3.getPrize()).build();
+
+
 
         prizeRequestDto = PrizeRequestDto.builder()
                 .requestDate(Timestamp.valueOf("2020-06-14 11:55:00"))
                 .brandId(1L)
                 .productId(35455).build();
     }
-
 
 
     @Test
@@ -113,9 +108,9 @@ class PrizesServiceTest {
     @Test
     void testgetPrize() {
         when(prizesRepository.findByProductIdAndBrandId(35455, 1L)).thenReturn(prizes);
-        prize = this.prizesService.getPrize(prizeRequestDto, prizes);
-
-        assertNotNull(prize, "prize object should not be null");
+       when(this.prizesAsyncService.getPrize(prizeRequestDto, prizes)).thenReturn(this.prize);
+       Prize prize1=prizesAsyncService.getPrize(prizeRequestDto,prizesRepository.findByProductIdAndBrandId(35455, 1L));
+        assertNotNull(prize1, "prize object should not be null");
         assertAll("getPrize",
                 () -> assertEquals(BigDecimal.valueOf(25.45), prize.getPrize()),
                 () -> assertEquals(35455, prize.getProductId()));
@@ -124,17 +119,41 @@ class PrizesServiceTest {
 
     @Test
     void testentityToDto() {
-
-        prizeResponseDto = prizesService.entityToDto(prize, prizeRequestDto.getRequestDate());
+        LocalDate localDate= LocalDate.ofInstant(prizeRequestDto.getRequestDate().toInstant(), ZoneId.of("UTC"));
+        localDates.add(localDate);   PrizeResponseDto   prizeResponseDto1 = PrizeResponseDto.builder()//PrizeResponseDto.PrizeResponseDtoBuilder builder = PrizeResponseDto.builder();
+                .productId(prize.getProductId())
+                .brandId(1L)
+                .prizeList(2)
+                .applicationDates(localDates)
+                .prize(BigDecimal.valueOf(30.5)).build();
+      //  when(prizesRepository.findByProductIdAndBrandId(35455, 1L)).thenReturn(prizes);
+        when(this.prizesAsyncService.entityToDto(this.prize, prizeRequestDto.getRequestDate())).thenReturn(this.prizeResponseDto);
+       this.prizeResponseDto = prizesAsyncService.entityToDto(this.prize, prizeRequestDto.getRequestDate());
         assertNotNull(prizeResponseDto, "prizeResponseDto object should not be null");
         final Runnable runnable = () -> assertEquals(1, prizeResponseDto.getApplicationDates().size());
         assertAll(
-                () -> assertEquals(BigDecimal.valueOf(25.45), prizeResponseDto.getPrize()),
+                () -> assertEquals(BigDecimal.valueOf(30.5), prizeResponseDto.getPrize()),
                 () -> assertEquals(1, prizeResponseDto.getApplicationDates().size())
         );
     }
 
     @Test
-    void deleteInBatch() {
+    void asyncPrizeResponse() throws InterruptedException {
+
+
+        PrizeRequestDto prizeRequestDto = new PrizeRequestDto(Timestamp.valueOf("2020-06-14 00:00:00"), 1, 1L);
+        PrizeResponseDto prizeResponseDto = new PrizeResponseDto(35455, 1L, 1, localDates, BigDecimal.valueOf(35.50));
+        when(prizesAsyncService.getCurrentPrizeByProductIdAndBrandId(prizeRequestDto))
+                .thenReturn(new AsyncResult<>(prizeResponseDto));
+        this.prizesAsyncService.getCurrentPrizeByProductIdAndBrandId(prizeRequestDto);
+
+        try {
+            boolean awaitTermination = this.myTaskExecutor.getThreadPoolExecutor().awaitTermination(1, TimeUnit.SECONDS);
+            Assertions.assertFalse(awaitTermination);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+
     }
 }

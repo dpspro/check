@@ -4,7 +4,7 @@ import com.in.jrfc.dtos.PrizeRequestDto;
 import com.in.jrfc.dtos.PrizeResponseDto;
 import com.in.jrfc.entities.Prize;
 import com.in.jrfc.repositories.PrizesRepository;
-import com.in.jrfc.services.PrizesService;
+import com.in.jrfc.services.PrizesAsyncService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,7 +40,7 @@ class ExpectedBehaviorIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
     @Autowired
-    private PrizesService prizesService;
+    private PrizesAsyncService prizesService;
     @MockBean
     private PrizesRepository prizesRepository;
     Prize prize;
@@ -104,7 +104,7 @@ class ExpectedBehaviorIntegrationTest {
                             )
                             .contentType("application/json")
             ).andDo(print()).andExpect(status().isOk());
-            PrizeResponseDto responseDtoResult = prizesService.getCurrentPrizeByProductIdAndBrandId(prizeRequestDtoAll);
+            PrizeResponseDto responseDtoResult = prizesService.getCurrentPrizeByProductIdAndBrandId(prizeRequestDtoAll).get();
             Assertions.assertAll(
                     () -> assertEquals(35455, responseDtoResult.getProductId()
                             , "ProductIOd " + responseDtoResult.getProductId()),

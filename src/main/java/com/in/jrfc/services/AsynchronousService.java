@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
+@Deprecated
 @Service
 public class AsynchronousService {
 
@@ -24,7 +24,7 @@ public class AsynchronousService {
         this.prizeService = prizeService;
     }
 
-    @Async("asyncTaskExecutor")
+//    @Async("asyncTaskExecutor")
     public Future<PrizeResponseDto> asyncPrizeResponse(final PrizeRequestDto prizeRequestDto) {
 
         try {

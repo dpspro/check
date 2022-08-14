@@ -3,7 +3,7 @@ package com.in.jrfc.controllers;
 import com.in.jrfc.dtos.PrizeRequestDto;
 import com.in.jrfc.dtos.PrizeResponseDto;
 import com.in.jrfc.exceptions.PrizeNotFoundException;
-import com.in.jrfc.services.AsynchronousService;
+import com.in.jrfc.services.PrizesAsyncService;
 import com.in.jrfc.utility.PrizeServiceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 
 @RestController
@@ -28,28 +27,26 @@ public class PrizesController {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(PrizesController.class);
     @Autowired
-    private final AsynchronousService asynchronousService;
+    private final PrizesAsyncService prizesAsyncService;
 
     @Autowired
-    public PrizesController(AsynchronousService asynchronousService) {
-        this.asynchronousService = asynchronousService;
+    public PrizesController(PrizesAsyncService prizesAsyncService) {
+        this.prizesAsyncService = prizesAsyncService;
     }
 
     @GetMapping(value = "/{hour},{productId},{brandId}", produces = MediaType.APPLICATION_JSON_VALUE)
-
     public ResponseEntity<PrizeResponseDto> getPrize(@PathVariable (value = "hour")
                                                      @DateTimeFormat(pattern = PrizeServiceUtils.FORMATO_FECHA) final Date hour,
                                                      @PathVariable (value="productId") Integer productId,
                                                      @PathVariable (value = "brandId") Long brandId) throws PrizeNotFoundException, InterruptedException, ExecutionException {
         final PrizeRequestDto prizeFilterParams = new PrizeRequestDto(hour, productId, brandId);
-        Future<PrizeResponseDto> respFuture = asynchronousService.asyncPrizeResponse(prizeFilterParams);
-        if (respFuture != null){
-            return new ResponseEntity<PrizeResponseDto>(respFuture.get(), HttpStatus.OK);
-    }else{
+        PrizeResponseDto respFuture = prizesAsyncService.getCurrentPrizeByProductIdAndBrandId(prizeFilterParams).get();
+        if (respFuture != null) {
+            return new ResponseEntity<PrizeResponseDto>(respFuture, HttpStatus.OK);
+        } else {
             throw new PrizeNotFoundException();
+        }
     }
-    }
-
 
 
 
