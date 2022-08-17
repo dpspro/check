@@ -35,7 +35,8 @@ public class PriceController {
     public ResponseEntity<PriceResponseDto> getPrice(@PathVariable (value = "hour")
                                                      @DateTimeFormat(pattern = PriceServiceUtils.FORMATO_FECHA) final Date hour,
                                                      @PathVariable (value="productId") Integer productId,
-                                                     @PathVariable (value = "brandId") Long brandId) throws PriceNotFoundException, InterruptedException, ExecutionException {
+                                                     @PathVariable (value = "brandId") Long brandId) throws PriceNotFoundException,
+            InterruptedException, ExecutionException {
         final PriceRequestDto priceFilterParams = new PriceRequestDto(hour, productId, brandId);
         PriceResponseDto respFuture = priceAsyncService.getCurrentPriceByProductIdAndBrandId(priceFilterParams).get();
         if (respFuture != null) {

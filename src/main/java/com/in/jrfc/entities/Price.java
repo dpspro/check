@@ -58,11 +58,12 @@ public class  Price {
 
     public List<LocalDate> lookForApplicationDates(Date filterDate) {
 
-        this.priceMandatoryDays = Collections.unmodifiableList(listPriceMandatiryDays(filterDate));
+        this.priceMandatoryDays = Collections
+                .unmodifiableList(listPriceMandatoryDays(filterDate));
         return this.priceMandatoryDays;
     }
 
-    private List<LocalDate> listPriceMandatiryDays(Date filterDate) {
+    private List<LocalDate> listPriceMandatoryDays(Date filterDate) {
 
         final List<LocalDate> localDateList = LocalDate.ofInstant(filterDate.toInstant(), ZoneId.of("UTC"))
                 .datesUntil(LocalDate.ofInstant(this.endDate.toInstant(), ZoneId.of("UTC")))

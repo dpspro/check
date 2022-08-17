@@ -1,10 +1,10 @@
 package com.in.jrfc;
 
-import com.in.jrfc.dtos.PrizeRequestDto;
-import com.in.jrfc.dtos.PrizeResponseDto;
-import com.in.jrfc.entities.Prize;
-import com.in.jrfc.repositories.PrizesRepository;
-import com.in.jrfc.services.PrizesAsyncService;
+import com.in.jrfc.dtos.PriceRequestDto;
+import com.in.jrfc.dtos.PriceResponseDto;
+import com.in.jrfc.entities.Price;
+import com.in.jrfc.repositories.PriceRepository;
+import com.in.jrfc.services.PriceAsyncService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -40,52 +41,52 @@ class ExpectedBehaviorIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
     @Autowired
-    private PrizesAsyncService prizesService;
+    private PriceAsyncService priceService;
     @MockBean
-    private PrizesRepository prizesRepository;
-    Prize prize;
+    private PriceRepository priceRepository;
+    Price price;
     private final List<LocalDate> localDates = new ArrayList<>();
-    private final List<Prize> prizes = new ArrayList<>();
-    private PrizeResponseDto prizeResponseDto;
-    private PrizeRequestDto prizeRequestDto;
+    private final List<Price> priceList = new ArrayList<>();
+    private PriceResponseDto priceResponseDto;
+    private PriceRequestDto priceRequestDto;
 
     @BeforeEach
     void setUp() {
 
-        Prize prize1 = Prize.builder().brandId(1L)
+        Price price1 = Price.builder().brandId(1L)
                 .startDate(Timestamp.valueOf("2020-06-14 00:00:00"))
-                .endDate(Timestamp.valueOf("2020-12-31 23:59:59")).prizeList(1)
-                .productId(35455).priority(0).prize(BigDecimal.valueOf(35.50))
+                .endDate(Timestamp.valueOf("2020-12-31 23:59:59")).priceList(1)
+                .productId(35455).priority(0).price(BigDecimal.valueOf(35.50))
                 .curr("EUR").build();
-        Prize prize2 = Prize.builder().brandId(1L)
+        Price price2 = Price.builder().brandId(1L)
                 .startDate(Timestamp.valueOf("2020-06-14 15:00:00"))
-                .endDate(Timestamp.valueOf("2020-06-14 18:30:00")).prizeList(2)
-                .productId(35455).priority(1).prize(BigDecimal.valueOf(25.45))
+                .endDate(Timestamp.valueOf("2020-06-14 18:30:00")).priceList(2)
+                .productId(35455).priority(1).price(BigDecimal.valueOf(25.45))
                 .curr("EUR").build();
-        Prize prize3 = Prize.builder().brandId(1L)
+        Price price3 = Price.builder().brandId(1L)
                 .startDate(Timestamp.valueOf("2020-06-15 00:00:00"))
-                .endDate(Timestamp.valueOf("2020-12-15 11:00:00")).prizeList(3)
-                .productId(35455).priority(1).prize(BigDecimal.valueOf(30.50))
+                .endDate(Timestamp.valueOf("2020-12-15 11:00:00")).priceList(3)
+                .productId(35455).priority(1).price(BigDecimal.valueOf(30.50))
                 .curr("EUR").build();
-        Prize prize4 = Prize.builder().brandId(1L)
+        Price price4 = Price.builder().brandId(1L)
                 .startDate(Timestamp.valueOf("2020-06-15 16:00:00"))
-                .endDate(Timestamp.valueOf("2020-12-31 23:59:59")).prizeList(4)
-                .productId(35455).priority(1).prize(BigDecimal.valueOf(38.95))
+                .endDate(Timestamp.valueOf("2020-12-31 23:59:59")).priceList(4)
+                .productId(35455).priority(1).price(BigDecimal.valueOf(38.95))
                 .curr("EUR").build();
-        prizes.add(prize1);
-        prizes.add(prize2);
-        prizes.add(prize3);
-        prizes.add(prize4);
-        prize = prize2;
+        priceList.add(price1);
+        priceList.add(price2);
+        priceList.add(price3);
+        priceList.add(price4);
+        price = price2;
 
-        prizeResponseDto = PrizeResponseDto.builder()
-                .productId(prize3.getProductId())
-                .brandId(prize3.getBrandId())
-                .prizeList(prize3.getPrizeList())
-                .applicationDates(new ArrayList<LocalDate>())
-                .prize(prize3.getPrize()).build();
+        priceResponseDto = PriceResponseDto.builder()
+                .productId(price3.getProductId())
+                .brandId(price3.getBrandId())
+                .priceList(price3.getPriceList())
+                .applicationDates(new ArrayList<>())
+                .price(price3.getPrice()).build();
 
-        prizeRequestDto = PrizeRequestDto.builder()
+        priceRequestDto = PriceRequestDto.builder()
                 .requestDate(Timestamp.valueOf("2020-06-14 11:55:00"))
                 .brandId(1L)
                 .productId(35455).build();
@@ -93,25 +94,24 @@ class ExpectedBehaviorIntegrationTest {
     }
 
     @ParameterizedTest
-    @MethodSource("prizeRequestDtoProviderFactory")
-    void testAllPrizes(PrizeRequestDto prizeRequestDtoAll) throws ExecutionException, InterruptedException {
+    @MethodSource("priceRequestDtoProviderFactory")
+    void testAllPrice(PriceRequestDto priceRequestDtoAll) {
 
-        when(prizesRepository.findByProductIdAndBrandId(prizeRequestDtoAll.getProductId(), prizeRequestDtoAll.getBrandId())).thenReturn(prizes);
+        when(priceRepository.findByProductIdAndBrandId(priceRequestDtoAll.getProductId(), priceRequestDtoAll.getBrandId())).thenReturn(priceList);
 
         try {
-            mockMvc.perform(MockMvcRequestBuilders.get("/prize/{hour},{productId},{brandId}", prizeRequestDtoAll.getRequestDate()
-                                    , prizeRequestDtoAll.getProductId(), prizeRequestDtoAll.getBrandId()
+            mockMvc.perform(MockMvcRequestBuilders.get("/price/{hour},{productId},{brandId}", priceRequestDtoAll.getRequestDate()
+                                    , priceRequestDtoAll.getProductId(), priceRequestDtoAll.getBrandId()
                             )
                             .contentType("application/json")
             ).andDo(print()).andExpect(status().isOk());
-            PrizeResponseDto responseDtoResult = prizesService.getCurrentPrizeByProductIdAndBrandId(prizeRequestDtoAll).get();
+            PriceResponseDto responseDtoResult = priceService.getCurrentPriceByProductIdAndBrandId(priceRequestDtoAll).get();
             Assertions.assertAll(
                     () -> assertEquals(35455, responseDtoResult.getProductId()
                             , "ProductIOd " + responseDtoResult.getProductId()),
                     () -> assertEquals(1L, responseDtoResult.getBrandId()
-                            , "branddD " + responseDtoResult.getBrandId()),
-                    () -> assertEquals(true, responseDtoResult.getApplicationDates().size() > 0
-                            , "mandatory aplication days" + responseDtoResult.getApplicationDates().size()));
+                            , "brandId " + responseDtoResult.getBrandId()),
+                    () -> assertTrue(responseDtoResult.getApplicationDates().size() > 0, "mandatory aplication days" + responseDtoResult.getApplicationDates().size()));
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -119,25 +119,25 @@ class ExpectedBehaviorIntegrationTest {
 
     }
 
-    static Iterator<PrizeRequestDto> prizeRequestDtoProviderFactory() {
-        List<PrizeRequestDto> requestDtos = new ArrayList<>();
-        requestDtos.add(PrizeRequestDto.builder()
+    static Iterator<PriceRequestDto> priceRequestDtoProviderFactory() {
+        List<PriceRequestDto> requestDtos = new ArrayList<>();
+        requestDtos.add(PriceRequestDto.builder()
                 .requestDate(Timestamp.valueOf("2020-06-14 10:00:00"))
                 .productId(35455)
                 .brandId(1L).build());
-        requestDtos.add(PrizeRequestDto.builder()
+        requestDtos.add(PriceRequestDto.builder()
                 .requestDate(Timestamp.valueOf("2020-06-14 16:00:00"))
                 .productId(35455)
                 .brandId(1L).build());
-        requestDtos.add(PrizeRequestDto.builder()
+        requestDtos.add(PriceRequestDto.builder()
                 .requestDate(Timestamp.valueOf("2020-06-14 21:00:00"))
                 .productId(35455)
                 .brandId(1L).build());
-        requestDtos.add(PrizeRequestDto.builder()
+        requestDtos.add(PriceRequestDto.builder()
                 .requestDate(Timestamp.valueOf("2020-06-15 10:00:00"))
                 .productId(35455)
                 .brandId(1L).build());
-        requestDtos.add(PrizeRequestDto.builder()
+        requestDtos.add(PriceRequestDto.builder()
                 .requestDate(Timestamp.valueOf("2020-06-16 21:00:00"))
                 .productId(35455)
                 .brandId(1L).build());

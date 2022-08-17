@@ -47,22 +47,24 @@ class PriceControllerTest {
     private WebApplicationContext webApplicationContext;
 
     private Price price;
-    private List<LocalDate> priceList;
+    private final List<LocalDate> localDates= new ArrayList<>();
     private PriceRequestDto priceRequestDto;
+    private PriceResponseDto priceResponseDto;
 
     @MockBean
     private PriceAsyncService priceAsyncService;
-
+    @MockBean
+    private PriceController priceController;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         priceAsyncService = mock(PriceAsyncService.class);
-        PriceController priceController = new PriceController(priceAsyncService);
+
         this.priceRequestDto = PriceRequestDto.builder().requestDate(Timestamp.valueOf("2020-06-14 00:00:00"))
                 .productId(35455).brandId(1L).build();
-        this.priceList = new ArrayList<>();
-        this.priceList.add(LocalDate.ofInstant(this.priceRequestDto.getRequestDate().toInstant(), ZoneId.of("UTC")));
+
+        this.localDates.add(LocalDate.ofInstant(this.priceRequestDto.getRequestDate().toInstant(), ZoneId.of("UTC")));
 
 
     }
@@ -74,17 +76,17 @@ class PriceControllerTest {
                 .endDate(Timestamp.valueOf("2020-12-31 23:59:59")).priceList(1)
                 .productId(35455).priority(0).price(BigDecimal.valueOf(35.50))
                 .curr("EUR").build();
-        PriceResponseDto priceResponseDto = PriceResponseDto.builder()
+        this.priceResponseDto = PriceResponseDto.builder()
                 .productId(price.getProductId())
                 .brandId(price.getBrandId())
                 .priceList(price.getPriceList())
-                .applicationDates(priceList)
+                .applicationDates(localDates)
                 .price(price.getPrice()).build();
         String hour = "2020-06-14 00:00:00";
         Integer pId = 35455;
         String bId = "1";
         when(priceAsyncService.getCurrentPriceByProductIdAndBrandId(priceRequestDto))
-                .thenReturn(new AsyncResult<>(priceResponseDto));
+                .thenReturn(new AsyncResult<>(this.priceResponseDto));
         mockMvc.perform(get("/price/{hour},{productId},{brandId}", hour, pId, bId).contentType("application/json")
                 ).andDo(print()).
                 andExpect(status().isOk());
@@ -96,6 +98,7 @@ class PriceControllerTest {
         Assertions.assertEquals(responseDtoResult.get().getApplicationDates().size(), 1);
 
     }
+
 
     @Test
     void getPriceAsyncBadRequest() throws Exception {
