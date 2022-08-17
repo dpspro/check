@@ -14,12 +14,12 @@ import java.util.List;
 @ToString
 @EqualsAndHashCode
 @Builder
-public class PrizeResponseDto {
+public class PriceResponseDto {
     private Integer productId;
     private Long brandId;
-    private Integer prizeList;
+    private Integer priceList;
     private List<LocalDate> applicationDates;
-    private BigDecimal prize;
+    private BigDecimal price;
 
 
 }

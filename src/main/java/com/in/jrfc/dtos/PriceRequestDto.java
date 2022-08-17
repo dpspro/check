@@ -12,7 +12,7 @@ import java.util.Date;
 @NoArgsConstructor
 @ToString
 @Builder
-public class PrizeRequestDto {
+public class PriceRequestDto {
     @JsonFormat(pattern = "yyyy-MM-dd' 'HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd' 'HH:mm:ss")
     private Date requestDate;

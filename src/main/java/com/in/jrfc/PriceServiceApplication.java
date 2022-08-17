@@ -8,10 +8,10 @@ import org.springframework.scheduling.annotation.EnableAsync;
 
 
 @SpringBootApplication
-public class PrizesServiceApplication {
+public class PriceServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(PrizesServiceApplication.class, args);
+		SpringApplication.run(PriceServiceApplication.class, args);
 	}
 
 }

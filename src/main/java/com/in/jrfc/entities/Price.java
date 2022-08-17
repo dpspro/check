@@ -20,35 +20,35 @@ import java.util.stream.Collectors;
 @Builder
 
 @Entity
-public class  Prize {
+public class  Price {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long brandId;
     private Date startDate;
     private Date endDate;
-    private Integer prizeList;
+    private Integer priceList;
     private Integer productId;
     private Integer priority;
-    private BigDecimal prize;
+    private BigDecimal price;
     private String curr;
 
     @JsonIgnore
     @Transient
-    private List<LocalDate> prizeMandatoryDays;
+    private List<LocalDate> priceMandatoryDays;
 
-    public Prize(Long brandId, Date startDate, Date endDate, Integer prizeList, Integer productId, Integer priority, BigDecimal prize, String curr) {
+    public Price(Long brandId, Date startDate, Date endDate, Integer priceList, Integer productId, Integer priority, BigDecimal price, String curr) {
         this.brandId = brandId;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.prizeList = prizeList;
+        this.priceList = priceList;
         this.productId = productId;
         this.priority = priority;
-        this.prize = prize;
+        this.price = price;
         this.curr = curr;
     }
 
-    public boolean validPrizeRange(Date applicationTime) {
+    public boolean validPriceRange(Date applicationTime) {
         return applicationDates(applicationTime);
     }
 
@@ -58,12 +58,12 @@ public class  Prize {
 
     public List<LocalDate> lookForApplicationDates(Date filterDate) {
 
-        for (LocalDate localDate : this.prizeMandatoryDays = Collections.unmodifiableList(listPrizeMandatiryDays(filterDate))) {
-        }
-        return this.prizeMandatoryDays;
+        this.priceMandatoryDays = Collections
+                .unmodifiableList(listPriceMandatoryDays(filterDate));
+        return this.priceMandatoryDays;
     }
 
-    private List<LocalDate> listPrizeMandatiryDays(Date filterDate) {
+    private List<LocalDate> listPriceMandatoryDays(Date filterDate) {
 
         final List<LocalDate> localDateList = LocalDate.ofInstant(filterDate.toInstant(), ZoneId.of("UTC"))
                 .datesUntil(LocalDate.ofInstant(this.endDate.toInstant(), ZoneId.of("UTC")))

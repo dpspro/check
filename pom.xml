@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.in.jrfc</groupId>
-    <artifactId>prizes-service</artifactId>
+    <artifactId>price-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>prizes-service</name>
+    <name>price-service</name>
     <description>Demo project for Spring Boot</description>
     <packaging>jar</packaging>
     <properties>

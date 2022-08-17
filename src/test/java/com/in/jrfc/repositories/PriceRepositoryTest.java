@@ -1,6 +1,6 @@
 package com.in.jrfc.repositories;
 
-import com.in.jrfc.entities.Prize;
+import com.in.jrfc.entities.Price;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -15,55 +15,55 @@ import java.util.List;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @DataJpaTest
-class PrizesRepositoryTest {
+class PriceRepositoryTest {
 
     @Autowired
-    private PrizesRepository prizesRepository;
-    private Prize prize;
+    private PriceRepository priceRepository;
+    private Price price;
 
     @BeforeEach
     void setUp() {
 
-        prize = Prize.builder().brandId(1L)
+        price = Price.builder().brandId(1L)
                 .startDate(Timestamp.valueOf("2021-06-14 00:00:00"))
-                .endDate(Timestamp.valueOf("2021-12-31 23:59:59")).prizeList(5)
-                .productId(99999).priority(1).prize(BigDecimal.valueOf(60.60))
+                .endDate(Timestamp.valueOf("2021-12-31 23:59:59")).priceList(5)
+                .productId(99999).priority(1).price(BigDecimal.valueOf(60.60))
                 .curr("EUR").build();
     }
 
 
     @Test
-    @DisplayName("can_get_a_prize_by_productId_and_brandId")
+    @DisplayName("can_get_a_price_by_productId_and_brandId")
     void findByProductIdAndBrandIdTest() {
         //given
 
-        prize = Prize.builder().brandId(1L)
+        price = Price.builder().brandId(1L)
                 .startDate(Timestamp.valueOf("2021-06-14 00:00:00"))
-                .endDate(Timestamp.valueOf("2021-12-31 23:59:59")).prizeList(5)
-                .productId(99999).priority(1).prize(BigDecimal.valueOf(160.60))
+                .endDate(Timestamp.valueOf("2021-12-31 23:59:59")).priceList(5)
+                .productId(99999).priority(1).price(BigDecimal.valueOf(160.60))
                 .curr("EUR").build();
 
-        Prize prizeFromPersistence = prizesRepository.save(prize);
+        Price priceFromPersistence = priceRepository.save(price);
 
-        assertThat(prizesRepository.findByProductIdAndBrandId(99999, 1L)).isNotNull();
-        assertThat(prizesRepository.findByProductIdAndBrandId(99999, 1L).get(0)
-                .getPrize()).isEqualTo(prizeFromPersistence.getPrize());
+        assertThat(priceRepository.findByProductIdAndBrandId(99999, 1L)).isNotNull();
+        assertThat(priceRepository.findByProductIdAndBrandId(99999, 1L).get(0)
+                .getPrice()).isEqualTo(priceFromPersistence.getPrice());
 
     }
 
 
     @Test
     void findByProductIdAndBrandId() {
-        prize = new Prize(1L,
+        price = new Price(1L,
                 Timestamp.valueOf("2021-06-14 00:00:00"),
                 Timestamp.valueOf("2021-12-31 23:59:59"), 50
                 , 35456, 1, BigDecimal.valueOf(60.60)
                 , "EUR");
 
-        prizesRepository.save(prize);
+        priceRepository.save(price);
         //then
-        List<Prize> byProductIdAndBrandId;
-        byProductIdAndBrandId = prizesRepository
+        List<Price> byProductIdAndBrandId;
+        byProductIdAndBrandId = priceRepository
                 .findByProductIdAndBrandId(35456, 1L);
 
         Assertions.assertEquals(byProductIdAndBrandId.size(), 1);

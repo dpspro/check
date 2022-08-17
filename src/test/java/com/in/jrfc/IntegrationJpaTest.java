@@ -1,6 +1,6 @@
 package com.in.jrfc;
 
-import com.in.jrfc.repositories.PrizesRepository;
+import com.in.jrfc.repositories.PriceRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -20,7 +20,7 @@ class IntegrationJpaTest {
     @Autowired
     private EntityManager entityManager;
     @Autowired
-    private PrizesRepository prizesRepository;
+    private PriceRepository priceRepository;
 
 
     @Test
@@ -28,7 +28,7 @@ class IntegrationJpaTest {
         assertThat(dataSource).isNotNull();
         assertThat(jdbcTemplate).isNotNull();
         assertThat(entityManager).isNotNull();
-        assertThat(prizesRepository).isNotNull();
+        assertThat(priceRepository).isNotNull();
     }
 
 }
